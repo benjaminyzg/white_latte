@@ -54,4 +54,4 @@ jobs:
       - name: Push to Hugging Face Hub
         run: |
           # Uses the HF_TOKEN saved in the environment from the previous step
-          huggingface-cli upload YOUR_HF_USERNAME/YOUR_HF_REPO_NAME . . --repo-type=model
+          huggingface-cli upload benjaminy/white_latte . . --repo-type=model
