@@ -31,5 +31,5 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           # Replace with your actual Hugging Face repo URL (e.g., username/model-name)
-          git remote add hf https://huggingface.co/YOUR_HF_USERNAME/YOUR_HF_REPO_NAME
+          git remote add hf https://huggingface.co/benjaminy/white_latte
           git push --force hf main
