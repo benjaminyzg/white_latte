@@ -11,7 +11,7 @@ jobs:
     
     permissions:
       contents: read
-      id-token: write 
+      id-token: write # Required for OIDC authentication
 
     steps:
       - name: Checkout code
@@ -20,41 +20,11 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Exchange OIDC Token for Hugging Face Token
-        id: hf-auth
-        run: |
-          # 1. Request the OIDC ID token from GitHub
-          ID_TOKEN=$(curl -sSf \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://huggingface.co" \
-            | jq -r '.value')
-          
-          # 2. Exchange for Hugging Face token
-          RESPONSE=$(curl -sSfX POST https://huggingface.co/oauth/token \
-            -d grant_type=urn:ietf:params:oauth:grant-type:token-exchange \
-            -d subject_token_type=urn:ietf:params:oauth:token-type:jwt \
-            -d subject_token="$ID_TOKEN" \
-            -d resource="benjaminyzg/white_latte")
-          
-          HF_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
-          
-          if [ -z "$HF_TOKEN" ] || [ "$HF_TOKEN" = "null" ]; then
-            echo "::error::Hugging Face returned an empty token. Check your Hugging Face Trusted Publisher settings!"
-            exit 1
-          fi
-          
-          echo "::add-mask::$HF_TOKEN"
-          echo "HF_TOKEN=$HF_TOKEN" >> $GITHUB_ENV
-
+      # This marketplace action handles the OIDC token exchange automatically
       - name: Push to Hugging Face Hub
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          
-          # Use the token securely to push directly to your Hugging Face repository
-          git push --force https://benjaminyzg:$HF_TOKEN@huggingface.co/benjaminyzg/white_latte main
+        uses: nateraw/huggingface-sync-action@v0.0.5
+        with:
+          github_repo_id: benjaminyzg/white_latte
+          # CHANGE THIS if your Hugging Face repo path is different:
+          huggingface_repo_id: benjaminyzg/white_latte
+          repo_type: model
