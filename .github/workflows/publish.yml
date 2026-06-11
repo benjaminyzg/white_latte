@@ -1,30 +1,44 @@
-name: Push to Hugging Face
+name: Publish to Hugging Face
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch: # Allows you to manually click "Run workflow" if needed
 
 jobs:
-  deploy:
+  publish:
     runs-on: ubuntu-latest
     
     permissions:
+      id-token: write # CRUCIAL: Required so the job can request an OIDC token
       contents: read
-      id-token: write # Required for OIDC authentication
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
 
-      # This marketplace action handles the OIDC token exchange automatically
-      - name: Push to Hugging Face Hub
-        uses: nateraw/huggingface-sync-action@v0.0.5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          github_repo_id: benjaminyzg/white_latte
-          # CHANGE THIS if your Hugging Face repo path is different:
-          huggingface_repo_id: benjaminy/white_latte
-          repo_type: model
+          python-version: "3.11"
+
+      - name: Install Hugging Face Hub
+        run: |
+          pip install --upgrade huggingface_hub jq
+
+      - name: Native Hugging Face OIDC Sync
+        run: |
+          # 1. Request the token from GitHub's OIDC provider
+          ID_TOKEN=$(curl -sSf \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://huggingface.co" \
+            | jq -r '.value')
+          
+          # 2. Export the token explicitly so the HF CLI picks it up as a simulated login
+          echo "HF_TOKEN=$ID_TOKEN" >> $GITHUB_ENV
+
+      - name: Push to Hub
+        run: |
+          # The CLI will read the HF_TOKEN we generated above and complete the handshake
+          huggingface-cli upload benjaminy/white_latte . . --repo-type=model
