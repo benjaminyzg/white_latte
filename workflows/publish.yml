@@ -3,7 +3,7 @@ name: Push to Hugging Face
 on:
   push:
     branches:
-      - main # Triggers the workflow when you push to main
+      - main
 
 jobs:
   deploy:
