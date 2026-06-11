@@ -11,7 +11,7 @@ jobs:
     
     permissions:
       contents: read
-      id-token: write # Crucial: Allows GitHub to request the OIDC token
+      id-token: write 
 
     steps:
       - name: Checkout code
@@ -31,27 +31,21 @@ jobs:
 
       - name: Exchange OIDC Token for Hugging Face Token
         run: |
-          # 1. Request the OIDC ID token from GitHub's internal action environment
           ID_TOKEN=$(curl -sSf \
             -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://huggingface.co" \
             | jq -r '.value')
           
-          # 2. Exchange the GitHub OIDC token for a short-lived Hugging Face token
           HF_TOKEN=$(curl -sSfX POST https://huggingface.co/oauth/token \
             -d grant_type=urn:ietf:params:oauth:grant-type:token-exchange \
             -d subject_token_type=urn:ietf:params:oauth:token-type:jwt \
             -d subject_token="$ID_TOKEN" \
-            -d resource="YOUR_HF_USERNAME/YOUR_HF_REPO_NAME" \
+            -d resource="benjaminyzg/white_latte" \
             | jq -r '.access_token')
           
-          # 3. Mask the token in GitHub Actions logs for security
           echo "::add-mask::$HF_TOKEN"
-          
-          # 4. Save the token to the global environment so the HF CLI can use it automatically
           echo "HF_TOKEN=$HF_TOKEN" >> $GITHUB_ENV
 
       - name: Push to Hugging Face Hub
         run: |
-          # Uses the HF_TOKEN saved in the environment from the previous step
-          huggingface-cli upload benjaminy/white_latte . . --repo-type=model
+          huggingface-cli upload benjaminyzg/white_latte . . --repo-type=model
