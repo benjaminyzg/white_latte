@@ -24,4 +24,4 @@ jobs:
           git config --global user.name "GitHub Actions"
           
           # Force push using your saved repository secret token
-          git push --force https://benjaminyzg:$HF_SECRET@huggingface.co/models/benjaminyzg/white_latte main
+          git push --force https://benjaminyzg:$HF_SECRET@huggingface.co/models/benjaminy/white_latte main
