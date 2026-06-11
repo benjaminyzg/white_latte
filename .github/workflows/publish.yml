@@ -23,7 +23,7 @@ jobs:
 
       # Log in using the Trusted Publisher OIDC token
       - name: Login to Hugging Face
-        uses: huggingface/actions/credential-helper@v1
+        uses: huggingface/actions/credential-helper@main
 
       # Example: Push your model/files using git
       - name: Push to Hugging Face Hub
