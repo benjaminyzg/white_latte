@@ -26,5 +26,5 @@ jobs:
         with:
           github_repo_id: benjaminyzg/white_latte
           # CHANGE THIS if your Hugging Face repo path is different:
-          huggingface_repo_id: benjaminyzg/white_latte
+          huggingface_repo_id: benjaminy/white_latte
           repo_type: model
